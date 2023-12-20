@@ -1,9 +1,7 @@
+using Pathing;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Android;
-using UnityEngine.UIElements;
 
 public class SelectingBehaviour : MonoBehaviour
 {
@@ -13,6 +11,7 @@ public class SelectingBehaviour : MonoBehaviour
     [SerializeField] private GameObject[] SelectedHexagons;
 
     [SerializeField] private int selectedCount;
+    private IList<IAStarNode> path;
 
     private void Start()
     {
@@ -42,8 +41,19 @@ public class SelectingBehaviour : MonoBehaviour
                 }
 
                 hit.collider.GetComponent<MeshRenderer>().material.EnableKeyword("_EMISSION");
-                hit.collider.GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", Color.red);
+                hit.collider.GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", Color.green);
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            path = AStar.GetPath(SelectedHexagons[0].GetComponent<Node>(), SelectedHexagons[1].GetComponent<Node>());
+            Debug.Log(path.Count);
+            //for (int i = 0; i < path.Count; i++)
+            //{
+            //    Debug.Log(path[i].Position());
+            //}
+            Debug.Log("pathing");
         }
     }
 

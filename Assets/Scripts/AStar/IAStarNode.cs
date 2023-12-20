@@ -1,16 +1,19 @@
 // Copyright 2020 Talespin, LLC. All Rights Reserved.
-
+using UnityEngine;
 using System.Collections.Generic;
 
 namespace Pathing
 {
-	// interface for classes that can be used with the A* algorithm defined in AStar.cs
-	//
-	// you will need to have the navigation targets in your world inherit from this interface for the algorithm to work
-	public interface IAStarNode
+    // interface for classes that can be used with the A* algorithm defined in AStar.cs
+    //
+    // you will need to have the navigation targets in your world inherit from this interface for the algorithm to work
+
+    public interface IAStarNode
 	{
-		// the neighbours property returns an enumeration of all the nodes adjacent to this node
-		IEnumerable<IAStarNode> Neighbours
+		public Vector2Int Position();
+        public float Cost();
+        // the Neighbours property returns an enumeration of all the nodes adjacent to this node
+        IEnumerable<IAStarNode> Neighbours
 		{
 			get;
 		}

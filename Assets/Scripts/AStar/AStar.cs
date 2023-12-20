@@ -60,6 +60,7 @@ namespace Pathing
 
 			closed.Clear();
 			open.Clear();
+			//adds start node
 			open.Add(start);
 
 			cameFrom.Clear();
