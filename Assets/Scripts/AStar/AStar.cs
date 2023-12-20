@@ -1,12 +1,14 @@
 // Copyright 2020 Talespin, LLC. All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Pathing
 {
 	// algorithm based on WikiPedia: http://en.wikipedia.org/wiki/A*_search_algorithm
 	//
-	// implements the static GetPath(...) function that will return a IList of IAStarNodes that is the shortest path
+	// implements the static GetPath(...) function that will return a IList of IAStarNodes that is the shortest currentPath
 	// between the two IAStarNodes that are passed as parameters to the function
 	public static class AStar
 	{
@@ -46,9 +48,9 @@ namespace Pathing
 		}
 
 		// this function is the C# implementation of the algorithm presented on the wikipedia page
-		// start and goal are the nodes in the graph we should find a path for
+		// start and goal are the nodes in the graph we should find a currentPath for
 		//
-		// returns null if no path is found
+		// returns null if no currentPath is found
 		//
 		// this function is NOT thread-safe (due to using static data for GC optimization)
 		public static IList<IAStarNode> GetPath(IAStarNode start, IAStarNode goal)
@@ -80,45 +82,57 @@ namespace Pathing
 
 			while (open.Count > 0)
 			{
+                UnityEngine.Debug.Log("the count of open is: " + open.Count);
+				//starting node
 				current = open[0];
-				if (current == goal)
-				{
-					return ReconstructPath(new List<IAStarNode>(), cameFrom, goal);
-				}
-				open.Remove(current);
+                //the current hexagon is equal to the goal hexagon construct final currentPath
+                if (current == goal)
+                {
+                    return ReconstructPath(new List<IAStarNode>(), cameFrom, goal);
+                }
+                open.Remove(current);
 				closed.Add(current);
 
 				if (current != start)
 				{
-					from = cameFrom[current];
-				}
-				foreach (IAStarNode next in current.Neighbours)
+					//sets the current hex to from (past hex)
+                    from = cameFrom[current];
+                }
+
+                //for each neighbour in Neighbours
+                foreach (IAStarNode next in current.Neighbours)
 				{
-					if (from != next && !closed.Contains(next))
-					{
-						tentativeGScore = gScore[current] + current.CostTo(next);
-						tentativeIsBetter = true;
+                    if (from != next && !closed.Contains(next))
+                    {
+                        tentativeGScore = gScore[current] + current.CostTo(next);
+                        tentativeIsBetter = true;
 
-						if (!open.Contains(next))
-						{
-							open.Add(next);
-						}
-						else
-						if (tentativeGScore >= gScore[next])
-						{
-							tentativeIsBetter = false;
-						}
-
-						if (tentativeIsBetter)
-						{
-							cameFrom[next] = current;
-							gScore[next] = tentativeGScore;
-							hScore[next] = next.EstimatedCostTo(goal);
-							fScore[next] = gScore[next] + hScore[next];
-						}
-					}
-				}
-				open.Sort(sorter);
+						//if open doesn't contain current selected neighbour yet
+                        if (!open.Contains(next))
+                        {
+                            open.Add(next);
+                        }
+                        else
+						//checks if the tentative gscore is overestimating
+                        if (tentativeGScore >= gScore[next])
+                        {
+							//gets set to false
+                            tentativeIsBetter = false;
+                        }
+						//if tentative var is better 
+                        if (tentativeIsBetter)
+                        {
+							//sets neighbour to next hex? i think...
+							//GIVES NULL???
+                            cameFrom[next] = current;
+							//
+                            gScore[next] = tentativeGScore;
+                            hScore[next] = next.EstimatedCostTo(goal);
+                            fScore[next] = gScore[next] + hScore[next];
+                        }
+                    }
+                }
+                open.Sort(sorter);
 			}
 			return null;
 		}

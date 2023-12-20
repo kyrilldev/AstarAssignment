@@ -3,66 +3,96 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SelectingBehaviour : MonoBehaviour
+namespace Pathing
 {
-    [SerializeField] private KeyCode key;
-    [SerializeField] private RaycastHit hit;
-
-    [SerializeField] private GameObject[] SelectedHexagons;
-
-    [SerializeField] private int selectedCount;
-    private IList<IAStarNode> path;
-
-    private void Start()
+    public class SelectingBehaviour : MonoBehaviour
     {
-        SelectedHexagons = new GameObject[2];
-    }
+        [SerializeField] private KeyCode key;
+        [SerializeField] private RaycastHit hit;
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(key))
+        [SerializeField] private GameObject[] SelectedHexagons;
+
+        [SerializeField] private int selectedCount;
+        private IList<IAStarNode> currentPath;
+        private IList<IAStarNode> previousPath;
+
+        private void Start()
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit))
-            {
-                if (selectedCount == 0)
-                {
-                    if (SelectedHexagons[0] != null)
-                    {
-                        ResetGlows();
-                    }
-                    SelectedHexagons[0] = hit.collider.gameObject;
-                    selectedCount++;
-                }
-                else
-                {
-                    SelectedHexagons[1] = hit.collider.gameObject;
-                    selectedCount = 0;
-                }
+            SelectedHexagons = new GameObject[2];
+        }
 
-                hit.collider.GetComponent<MeshRenderer>().material.EnableKeyword("_EMISSION");
-                hit.collider.GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", Color.green);
+        private void Update()
+        {
+            if (Input.GetKeyDown(key))
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out hit))
+                {
+                    if (selectedCount == 0)
+                    {
+                        if (SelectedHexagons[0] != null)
+                        {
+                            ResetGlows();
+                        }
+                        SelectedHexagons[0] = hit.collider.gameObject;
+                        selectedCount++;
+                    }
+                    else
+                    {
+                        SelectedHexagons[1] = hit.collider.gameObject;
+                        selectedCount++;
+
+                        if (SelectedHexagons[0] && SelectedHexagons[1] && selectedCount != 0)
+                        {
+                            selectedCount = 0;
+                            if (currentPath != null)
+                            {
+                                previousPath = currentPath;
+                            }
+                            currentPath = AStar.GetPath(SelectedHexagons[0].GetComponent<Node>(), SelectedHexagons[1].GetComponent<Node>());
+                            Debug.Log("pathing");
+
+                            foreach (IAStarNode node in currentPath)
+                            {
+                                node.GameObject().GetComponent<MeshRenderer>().material.EnableKeyword("_EMISSION");
+                                node.GameObject().GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", Color.red);
+                                DynamicGI.UpdateEnvironment();
+                            }
+
+                            if (previousPath != null)
+                            {
+                                foreach (IAStarNode node in previousPath)
+                                {
+                                    node.GameObject().GetComponent<MeshRenderer>().material.DisableKeyword("_EMISSION");
+                                }
+                            }
+                        }
+                    }
+
+                    hit.collider.GetComponent<MeshRenderer>().material.EnableKeyword("_EMISSION");
+                    hit.collider.GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", Color.green);
+                    DynamicGI.UpdateEnvironment();
+                }
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.T))
+        private void TestPath(IList<IAStarNode> path)
         {
-            path = AStar.GetPath(SelectedHexagons[0].GetComponent<Node>(), SelectedHexagons[1].GetComponent<Node>());
-            Debug.Log(path.Count);
-            //for (int i = 0; i < path.Count; i++)
-            //{
-            //    Debug.Log(path[i].Position());
-            //}
-            Debug.Log("pathing");
+            foreach (IAStarNode node in path)
+            {
+                print(node.Position() + " is the position of: " + node.ToString());
+            }
+        }
+
+        private void ResetGlows()
+        {
+            for (int i = 0; i < SelectedHexagons.Length; i++)
+            {
+                SelectedHexagons[i].GetComponent<MeshRenderer>().material.DisableKeyword("_EMISSION");
+                //SelectedHexagons[i].GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", );
+                DynamicGI.UpdateEnvironment();
+            }
         }
     }
 
-    private void ResetGlows()
-    {
-        for (int i = 0; i < SelectedHexagons.Length; i++)
-        {
-            SelectedHexagons[i].GetComponent<MeshRenderer>().material.DisableKeyword("_EMISSION");
-            //SelectedHexagons[i].GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", );
-        }
-    }
 }

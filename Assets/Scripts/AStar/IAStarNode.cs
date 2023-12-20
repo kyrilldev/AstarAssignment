@@ -11,6 +11,7 @@ namespace Pathing
     public interface IAStarNode
 	{
 		public Vector2Int Position();
+		public GameObject GameObject();
         public float Cost();
         // the Neighbours property returns an enumeration of all the nodes adjacent to this node
         IEnumerable<IAStarNode> Neighbours
